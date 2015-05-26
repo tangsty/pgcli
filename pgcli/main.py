@@ -252,14 +252,16 @@ class PGCli(object):
                     # if an exception occurs in pgexecute.run(). Which causes
                     # finally clause to fail.
                     res = []
-                    start = time()
+                    start_cmd = time()
                     # Run the query.
                     res = pgexecute.run(document.text)
-                    duration = time() - start
+                    duration = -1.0
                     successful = True
                     output = []
                     total = 0
                     for title, cur, headers, status in res:
+                        if duration < 0:
+                            duration = time() - start_cmd
                         logger.debug("headers: %r", headers)
                         logger.debug("rows: %r", cur)
                         logger.debug("status: %r", status)
@@ -277,6 +279,8 @@ class PGCli(object):
                         end = time()
                         total += end - start
                         mutating = mutating or is_mutating(status)
+                    if duration < 0:
+                        duration = time() - start_cmd
 
                 except KeyboardInterrupt:
                     # Restart connection to the database
